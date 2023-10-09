@@ -65,13 +65,50 @@ const addUser = (user) => {
     return user;
 }
 
+const deleteUserById = (id) => {
+    id = req.params['id']; //or req.params.id
+    let result = findUserById(id);
+    if (result === undefined) {
+        res.status(404).send('Resource not found.');
+    } else {
+        users['users_list'].splice(result,1)
+    }
+}
+
+const findUserByNameAndJob = (name,job) =>{
+    return users['users_list'].filter((user) => user['name'] === name && user['job'] === job)
+}
+
+app.get('/users', (req, res) => {
+    const name = req.query.name;
+    const job = req.query.job;
+
+    if(name === undefined){
+        res.send(users);
+    }else if(name != undefined && job != undefined){
+        let result = findUserByNameAndJob(name,job);
+        result = {users_list: result};
+        res.send(result);
+    }else{
+        let result = findUserByName(name);
+        result = {users_list: result};
+        res.send(result);
+    }
+});
 app.post('/users', (req, res) => {
     const userToAdd = req.body;
     addUser(userToAdd);
     res.send();
 });
 
-
+app.delete('/users/:id' , (req,res) => {
+    let result = deleteUserById(req.params['id']);
+    if (result === undefined) {
+        res.status(404).send('Resource not found.');
+    } else {
+        res.send(result)
+    }
+})
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`);
