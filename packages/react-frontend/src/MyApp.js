@@ -9,15 +9,13 @@ import React, {useState, useEffect} from 'react';
 function MyApp() {
     const [characters, setCharacters] = useState([]);
 
-	function removeOneCharacter (index) {
-	    const updated = characters.filter((character, i) => {
-	        return i !== index
-	    });
-	  setCharacters(updated);
-	}
-    function updateList(person) {
-        setCharacters([...characters, person]);
-      }
+	useEffect(() => {
+        fetchUsers()
+            .then((res) => res.json())
+            .then((json) => setCharacters(json["users_list"]))
+            .catch((error) => { console.log(error); });
+      }, [] );
+
     function fetchUsers() {
         const promise = fetch("http://localhost:8000/users");
         return promise;
@@ -35,17 +33,26 @@ function MyApp() {
       }
       function updateList(person) { 
         postUser(person)
-          .then(() => setCharacters([...characters, person]))
+          .then((res) => res.json()).then((json) => setCharacters([...characters, json]))
           .catch((error) => {
             console.log(error);
           })
     }
-    useEffect(() => {
-        fetchUsers()
-            .then((res) => res.json())
-            .then((json) => setCharacters(json["users_list"]))
-            .catch((error) => { console.log(error); });
-      }, [] );
+
+    function removeOneCharacter (index) {
+        
+        fetch(`http://localhost:8000/users/${characters[index].id}`, {method: "DELETE"}) .then((res) => {
+                if (res.status === 204){
+                    console.log("Successful removal");
+                    const updated = characters.filter((character, i) => i !== index);
+                    setCharacters(updated);
+                } else {
+                    console.log("Failed removing user");
+                }
+            });
+       
+	}
+    
 
     return (
         <div className="container">
